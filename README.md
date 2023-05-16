@@ -64,7 +64,7 @@ void main() async {
   // Restart the application
   await application.restart();
 
-  // Detach from the application, but dont stop it.
+  // Detach from the application, but don't stop it.
   await application.detach();
 
   // Stop the application.
