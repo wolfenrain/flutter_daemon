@@ -83,7 +83,7 @@ class FlutterDaemon {
   Future<void> close() async {
     _process?.kill();
     _process = null;
-    await Future.wait(_subscriptions.map((s) => s.cancel()));
+    await Future.wait(_subscriptions.map((s) => s.cancel()), eagerError: true);
     _subscriptions.clear();
   }
 
@@ -135,8 +135,7 @@ class FlutterDaemon {
       ),
       _process!.stdout
           .transform(utf8.decoder)
-          .where((d) => d.startsWith('['))
-          .map(json.decode)
+          .mapWhere(json.decode)
           .cast<List<dynamic>>()
           .listen(
         (list) {
@@ -157,11 +156,26 @@ class FlutterDaemon {
           }
         },
         onDone: complete,
-      )
+      ),
     ]);
 
     _process!.exitCode.then(complete).ignore();
 
     return completer.future;
+  }
+}
+
+extension<V> on Stream<V> {
+  Stream<T> mapWhere<T>(
+    T Function(V) map, {
+    void Function(Object err)? onError,
+  }) async* {
+    await for (final event in this) {
+      try {
+        yield map(event);
+      } catch (err) {
+        onError?.call(err);
+      }
+    }
   }
 }
