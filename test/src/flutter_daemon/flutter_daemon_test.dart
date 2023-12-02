@@ -19,6 +19,18 @@ void main() {
 
     late FlutterDaemon daemon;
 
+    void exitWith(int code) {
+      if (exitCode.isCompleted) return;
+      exitCode.complete(code);
+    }
+
+    void recreateStreams() {
+      stdout = StreamController(onCancel: () => exitWith(0));
+      when(() => process.stdout).thenAnswer((_) => stdout.stream);
+      stderr = StreamController(onCancel: () => exitWith(0));
+      when(() => process.stderr).thenAnswer((_) => stderr.stream);
+    }
+
     setUp(() {
       processManager = _MockProcessManager();
 
@@ -35,10 +47,7 @@ void main() {
       when(() => stdin.writeln(any())).thenAnswer((_) {});
       when(() => process.stdin).thenReturn(stdin);
 
-      stdout = StreamController();
-      when(() => process.stdout).thenAnswer((_) => stdout.stream);
-      stderr = StreamController();
-      when(() => process.stderr).thenAnswer((_) => stderr.stream);
+      recreateStreams();
       when(process.kill).thenReturn(true);
 
       when(
@@ -58,11 +67,10 @@ void main() {
 
       /// Emit app start event.
       await stdout.appStart();
-
       expect(await appFuture, isA<FlutterApplication>());
 
       expect(daemon.isFinished, isFalse);
-      exitCode.complete(0);
+      exitWith(0);
       await finishedFuture;
       expect(daemon.isFinished, isTrue);
     });
@@ -73,17 +81,18 @@ void main() {
 
       /// Emit app start event.
       await stdout.appStart();
-
       expect(await appFuture, isA<FlutterApplication>());
 
       expect(daemon.isFinished, isFalse);
-      exitCode.complete(0);
+      exitWith(0);
       await finishedFuture;
       expect(daemon.isFinished, isTrue);
     });
 
     test('throws state error if a process is already active', () async {
       final appFuture = daemon.attach(arguments: [], workingDirectory: '');
+
+      /// Emit app start event.
       await stdout.appStart();
       expect(await appFuture, isA<FlutterApplication>());
 
@@ -104,16 +113,19 @@ void main() {
     test('throws error buffer if process exist early', () async {
       final appFuture = daemon.attach(arguments: [], workingDirectory: '');
       stderr.add(utf8.encode('Some reason why it failed'));
-      exitCode.complete(1);
+      exitWith(1);
 
       expect(appFuture, throwsA(equals('Some reason why it failed')));
     });
 
     test('disposes correctly', () async {
       final appFuture = daemon.attach(arguments: [], workingDirectory: '');
+
+      /// Emit app start event.
       await stdout.appStart();
       expect(await appFuture, isA<FlutterApplication>());
 
+      exitWith(0);
       await daemon.dispose();
 
       expect(
@@ -130,41 +142,28 @@ void main() {
 
     test('closes correctly so it can be reused', () async {
       final appFuture1 = daemon.attach(arguments: [], workingDirectory: '');
+
+      /// Emit app start event.
       await stdout.appStart();
       expect(await appFuture1, isA<FlutterApplication>());
 
+      exitWith(0);
       await daemon.close();
 
       // Recreate the controllers.
-      stdout = StreamController();
-      stderr = StreamController();
+      recreateStreams();
 
       final appFuture2 = daemon.attach(arguments: [], workingDirectory: '');
+
+      /// Emit app start event.
       await stdout.appStart();
       expect(await appFuture2, isA<FlutterApplication>());
     });
 
-    test('disposes correctly', () async {
-      final appFuture = daemon.attach(arguments: [], workingDirectory: '');
-      await stdout.appStart();
-      expect(await appFuture, isA<FlutterApplication>());
-
-      await daemon.dispose();
-
-      expect(
-        daemon.attach(arguments: [], workingDirectory: ''),
-        throwsA(
-          isStateError.having(
-            (e) => e.message,
-            'message',
-            equals('Stream has already been listened to.'),
-          ),
-        ),
-      );
-    });
-
     test('handles requests correctly', () async {
       final appFuture = daemon.attach(arguments: [], workingDirectory: '');
+
+      /// Emit app start event.
       await stdout.appStart();
       expect(await appFuture, isA<FlutterApplication>());
 
@@ -199,6 +198,8 @@ void main() {
 
     test('emits events correctly', () async {
       final appFuture = daemon.attach(arguments: [], workingDirectory: '');
+
+      /// Emit app start event.
       await stdout.appStart();
       expect(await appFuture, isA<FlutterApplication>());
 
@@ -211,6 +212,35 @@ void main() {
           }
         ]),
       );
+
+      final event = await eventFuture;
+      expect(event.event, equals('test'));
+      expect(event.params, equals({'key': 1}));
+    });
+
+    test('does not throw error if malformed events appears', () async {
+      final appFuture = daemon.attach(arguments: [], workingDirectory: '');
+
+      /// Emit app start event.
+      await stdout.appStart();
+      expect(await appFuture, isA<FlutterApplication>());
+
+      final eventFuture = daemon.events.first;
+
+      // Thanks to Flutter we can now get some errors on stdout instead of
+      // stderr.
+      stdout
+        ..write(
+          '[ERROR:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalImpeller.mm(42)] Using the Impeller rendering backend.',
+        )
+        ..write(
+          json.encode([
+            {
+              'event': 'test',
+              'params': {'key': 1},
+            }
+          ]),
+        );
 
       final event = await eventFuture;
       expect(event.event, equals('test'));
