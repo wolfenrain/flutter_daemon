@@ -19,7 +19,7 @@ void main() {
         equals({
           'appId': 'appId',
           'methodName': 'methodName',
-          'params': {'parameter': 1}
+          'params': {'parameter': 1},
         }),
       );
     });
