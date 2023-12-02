@@ -25,7 +25,7 @@ void main() {
         final request = _.positionalArguments.first as AppRestartRequest;
         return request.response({
           'id': 0,
-          'result': {'code': 0, 'message': 'message'}
+          'result': {'code': 0, 'message': 'message'},
         });
       });
       when(() => daemon.request(any<AppDetachRequest>())).thenAnswer((_) async {
