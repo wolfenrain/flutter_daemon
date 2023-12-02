@@ -157,7 +157,7 @@ class FlutterDaemon {
           }
         },
         onDone: complete,
-      )
+      ),
     ]);
 
     _process!.exitCode.then(complete).ignore();

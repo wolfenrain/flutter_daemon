@@ -207,7 +207,7 @@ void main() {
         json.encode([
           {
             'event': 'test',
-            'params': {'key': 1}
+            'params': {'key': 1},
           }
         ]),
       );
@@ -227,7 +227,7 @@ extension on StreamController<List<int>> {
       json.encode([
         {
           'event': 'app.started',
-          'params': {'appId': '0000'}
+          'params': {'appId': '0000'},
         }
       ]),
     );

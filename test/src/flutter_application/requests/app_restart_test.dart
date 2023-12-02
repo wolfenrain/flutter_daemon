@@ -15,7 +15,7 @@ void main() {
           'fullRestart': null,
           'reason': null,
           'pause': null,
-          'debounce': null
+          'debounce': null,
         }),
       );
     });

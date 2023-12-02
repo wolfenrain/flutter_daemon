@@ -6,7 +6,7 @@ void main() {
     test('can construct one from JSON', () {
       final event = FlutterDaemonEvent.fromJSON({
         'event': 'test',
-        'params': {'key': 1}
+        'params': {'key': 1},
       });
 
       expect(event.event, equals('test'));
@@ -16,7 +16,7 @@ void main() {
     test('toString', () {
       final event = FlutterDaemonEvent.fromJSON({
         'event': 'test',
-        'params': {'key': 1}
+        'params': {'key': 1},
       });
 
       expect(event.toString(), equals('Event(test) {params: {key: 1}}'));
