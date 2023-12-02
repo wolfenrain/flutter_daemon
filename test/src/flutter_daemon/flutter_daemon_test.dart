@@ -218,7 +218,7 @@ void main() {
       expect(event.params, equals({'key': 1}));
     });
 
-    test('does not throw error if malformed info appears', () async {
+    test('does not throw error if malformed events appears', () async {
       final appFuture = daemon.attach(arguments: [], workingDirectory: '');
 
       /// Emit app start event.

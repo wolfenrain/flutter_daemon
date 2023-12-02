@@ -166,15 +166,12 @@ class FlutterDaemon {
 }
 
 extension<V> on Stream<V> {
-  Stream<T> mapWhere<T>(
-    T Function(V) map, {
-    void Function(Object err)? onError,
-  }) async* {
+  Stream<T> mapWhere<T>(T Function(V) map) async* {
     await for (final event in this) {
       try {
         yield map(event);
       } catch (err) {
-        onError?.call(err);
+        // Ignoring everything that can't be mapped
       }
     }
   }
