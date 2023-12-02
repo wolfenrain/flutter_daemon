@@ -1,6 +1,6 @@
 name: flutter_daemon
 description: A programmable interface around the Flutter daemon protocol.
-version: 1.0.0
+version: 1.0.1
 repository: https://github.com/wolfenrain/flutter_daemon
 issue_tracker: https://github.com/wolfenrain/flutter_daemon/issues
 
