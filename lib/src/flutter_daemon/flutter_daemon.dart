@@ -124,7 +124,10 @@ class FlutterDaemon {
     final errorBuffer = StringBuffer();
     _subscriptions.addAll([
       _process!.stderr.transform(utf8.decoder).listen(
-        errorBuffer.write,
+        (event) {
+          log(event, level: 300);
+          errorBuffer.write(event);
+        },
         onDone: () {
           // If it exited without correctly attaching to the application, we
           // output the errors.
