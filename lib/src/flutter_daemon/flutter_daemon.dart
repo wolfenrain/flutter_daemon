@@ -144,8 +144,8 @@ class FlutterDaemon {
             if (data.containsKey('event')) {
               final event = FlutterDaemonEvent.fromJSON(data);
               _eventsController.add(event);
-              if (event.event == 'app.started') {
-                log('App started', level: 300);
+              if (event.event == 'app.start') {
+                log('App is attachable', level: 300);
                 completer.complete(
                   FlutterApplication(event.params['appId'] as String, this),
                 );

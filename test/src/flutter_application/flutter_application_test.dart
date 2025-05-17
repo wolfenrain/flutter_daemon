@@ -45,6 +45,16 @@ void main() {
         });
       });
 
+      // Ensure the Flutter application get's an app.started event.
+      when(() => daemon.events).thenAnswer((_) {
+        return Stream.value(
+          FlutterDaemonEvent.fromJSON({
+            'event': 'app.started',
+            'params': {'appId': 'appId'},
+          }),
+        );
+      });
+
       application = FlutterApplication('appId', daemon);
     });
 
@@ -53,6 +63,11 @@ void main() {
       registerFallbackValue(AppRestartRequest('dummy'));
       registerFallbackValue(AppDetachRequest('dummy'));
       registerFallbackValue(AppCallServiceExtensionRequest('dummy', 'dummy'));
+    });
+
+    test('$FlutterApplication.attached resolves started directly', () {
+      final app = FlutterApplication.attached('appId', daemon);
+      expect(app.started, completes);
     });
 
     test('restart', () async {

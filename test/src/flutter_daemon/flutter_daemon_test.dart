@@ -67,7 +67,13 @@ void main() {
 
       /// Emit app start event.
       await stdout.appStart();
+
+      final app = await appFuture;
       expect(await appFuture, isA<FlutterApplication>());
+
+      // Emit app started event;
+      await stdout.appStarted();
+      expect(app.started, completes);
 
       expect(daemon.isFinished, isFalse);
       exitWith(0);
@@ -81,7 +87,13 @@ void main() {
 
       /// Emit app start event.
       await stdout.appStart();
+
+      final app = await appFuture;
       expect(await appFuture, isA<FlutterApplication>());
+
+      // Emit app started event;
+      await stdout.appStarted();
+      expect(app.started, completes);
 
       expect(daemon.isFinished, isFalse);
       exitWith(0);
@@ -94,7 +106,13 @@ void main() {
 
       /// Emit app start event.
       await stdout.appStart();
+
+      final app = await appFuture;
       expect(await appFuture, isA<FlutterApplication>());
+
+      // Emit app started event;
+      await stdout.appStarted();
+      expect(app.started, completes);
 
       expect(
         daemon.run(arguments: [], workingDirectory: ''),
@@ -123,7 +141,13 @@ void main() {
 
       /// Emit app start event.
       await stdout.appStart();
+
+      final app = await appFuture;
       expect(await appFuture, isA<FlutterApplication>());
+
+      // Emit app started event;
+      await stdout.appStarted();
+      expect(app.started, completes);
 
       exitWith(0);
       await daemon.dispose();
@@ -165,7 +189,13 @@ void main() {
 
       /// Emit app start event.
       await stdout.appStart();
+
+      final app = await appFuture;
       expect(await appFuture, isA<FlutterApplication>());
+
+      // Emit app started event;
+      await stdout.appStarted();
+      expect(app.started, completes);
 
       when(() => stdin.writeln(any())).thenAnswer((_) {
         final requests = json.decode(
@@ -201,7 +231,13 @@ void main() {
 
       /// Emit app start event.
       await stdout.appStart();
+
+      final app = await appFuture;
       expect(await appFuture, isA<FlutterApplication>());
+
+      // Emit app started event;
+      await stdout.appStarted();
+      expect(app.started, completes);
 
       final eventFuture = daemon.events.first;
       stdout.write(
@@ -223,7 +259,13 @@ void main() {
 
       /// Emit app start event.
       await stdout.appStart();
+
+      final app = await appFuture;
       expect(await appFuture, isA<FlutterApplication>());
+
+      // Emit app started event;
+      await stdout.appStarted();
+      expect(app.started, completes);
 
       final eventFuture = daemon.events.first;
 
@@ -253,6 +295,18 @@ extension on StreamController<List<int>> {
   void write(String data) => add(utf8.encode('$data\n'));
 
   Future<void> appStart() {
+    write(
+      json.encode([
+        {
+          'event': 'app.start',
+          'params': {'appId': '0000'},
+        }
+      ]),
+    );
+    return Future.delayed(Duration.zero);
+  }
+
+  Future<void> appStarted() {
     write(
       json.encode([
         {
