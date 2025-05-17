@@ -35,10 +35,14 @@ class FlutterApplication {
   late final Stream<FlutterDaemonEvent> events =
       _daemon.events.where((event) => event.params['appId'] == appId);
 
-  final FlutterDaemon _daemon;
-
+  /// Resolves once the application has emitted the `app.started` event.
+  ///
+  /// If this application was created through an attach it will already be
+  /// resolved.
   Future<void> get started => _started.future;
   final Completer<void> _started;
+
+  final FlutterDaemon _daemon;
 
   /// Restarts the application.
   ///
