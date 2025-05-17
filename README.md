@@ -49,18 +49,20 @@ void main() async {
 
   // You can run an application from the daemon.
   // Or alternatively you can attach using `daemon.attach`
-  final application = daemon.run(
+  final application = await daemon.run(
     arguments: [
       // Any flutter arguments go here.
     ],
     workingDirectory: 'your/flutter/app/location/',
   );
 
+  // Wait until it is fully started.
+  await application.started;
 
   application.events.listen((event) {
     // Listen to events specifically emitted by this application.
   });
-
+g
   // Restart the application
   await application.restart();
 
