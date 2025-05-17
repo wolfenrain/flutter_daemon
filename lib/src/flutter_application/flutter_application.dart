@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_daemon/flutter_daemon.dart';
 
 export 'requests/requests.dart';
@@ -10,7 +12,21 @@ export 'requests/requests.dart';
 /// {@endtemplate}
 class FlutterApplication {
   /// {@macro flutter_application}
-  FlutterApplication(this.appId, this._daemon);
+  FlutterApplication(this.appId, this._daemon) : _started = Completer() {
+    events
+        .firstWhere((e) => e.event == 'app.started')
+        .whenComplete(_started.complete);
+  }
+
+  /// {@macro flutter_application}
+  ///
+  /// Created when the daemon is getting attached to a running app.
+  FlutterApplication.attached(
+    this.appId,
+    this._daemon,
+  ) : _started = Completer() {
+    _started.complete();
+  }
 
   /// The application id of the attached flutter app.
   final String appId;
@@ -18,6 +34,13 @@ class FlutterApplication {
   /// Emits events related to this application.
   late final Stream<FlutterDaemonEvent> events =
       _daemon.events.where((event) => event.params['appId'] == appId);
+
+  /// Resolves once the application has emitted the `app.started` event.
+  ///
+  /// If this application was created through an attach it will already be
+  /// resolved.
+  Future<void> get started => _started.future;
+  final Completer<void> _started;
 
   final FlutterDaemon _daemon;
 

@@ -10,11 +10,14 @@ void main(List<String> arguments) async {
   final daemon = FlutterDaemon();
   daemon.events.listen(print);
 
-  final workingDirectory = arguments.removeAt(0);
+  final workingDirectory = arguments.first;
   final application = await daemon.run(
-    arguments: arguments,
+    arguments: arguments.sublist(1),
     workingDirectory: workingDirectory,
   );
+
+  // Wait for it to be fully started.
+  await application.started;
 
   print('started');
   await Future<void>.delayed(const Duration(seconds: 10));
